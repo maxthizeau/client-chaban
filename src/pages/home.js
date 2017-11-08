@@ -9,6 +9,7 @@ class HomePage extends Component {
 
     this.state = {
       data: null,
+      error: null,
     }
   }
 
@@ -17,18 +18,35 @@ class HomePage extends Component {
     // Get data from API
     fetch('http://localhost:1337')
       // parse response
-      .then((res) => res.json())
+    //  .then((res) => res.json())
       // use parsed response
-      .then((json) => {
-        this.setState({
-          data: json,
-        });
-      });
+      // parse response
+      .then((res) => {
+        if (res.status !== 200) {
+          console.log(res)
+          this.setState({
+            error: {
+              code: res.status,
+              message: res.statusText,
+            },
+          });
+        } else {
+            //  this.setState({
+            //    data: Object.values(res.json()),
+            //  })
+            //
+            //console.log(res.json())
+          return res.json();
+        }
+      })
+      .then(data => this.setState({data : data}))
   }
 
   render() {
 
     const { data } = this.state;
+    const {error} = this.state;
+    console.log(this.state.data);
 
     return (
       <div>
@@ -37,13 +55,18 @@ class HomePage extends Component {
 
 
 
-        {!data ? (
-          <ProgressBar />
-        ) : (
+        {(!data && !error) ?
+             (
+              <ProgressBar/>
+            )
+            :
+            !error? (
           <div>
             <List data={data} />
           </div>
-        )}
+        ) :
+        error.code +' '+ error.message
+         }
       </div>
     );
   }
